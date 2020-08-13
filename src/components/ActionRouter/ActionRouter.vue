@@ -30,9 +30,11 @@
 			rel="noreferrer noopener"
 			@click.native="onClick">
 			<!-- icon -->
-			<span :class="[isIconUrl ? 'action-router__icon--url' : icon]"
-				:style="{ backgroundImage: isIconUrl ? `url(${icon})` : null }"
-				class="action-router__icon" />
+			<slot name="icon">
+				<span :class="[isIconUrl ? 'action-router__icon--url' : icon]"
+					:style="{ backgroundImage: isIconUrl ? `url(${icon})` : null }"
+					class="action-router__icon" />
+			</slot>
 
 			<!-- long text with title -->
 			<p v-if="title">

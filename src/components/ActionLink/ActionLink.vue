@@ -45,9 +45,11 @@ This component is made to be used inside of the [Actions](#Actions) component sl
 			@click="onClick">
 
 			<!-- icon -->
-			<span :class="[isIconUrl ? 'action-link__icon--url' : icon]"
-				:style="{ backgroundImage: isIconUrl ? `url(${icon})` : null }"
-				class="action-link__icon" />
+			<slot name="icon">
+				<span :class="[isIconUrl ? 'action-link__icon--url' : icon]"
+					:style="{ backgroundImage: isIconUrl ? `url(${icon})` : null }"
+					class="action-link__icon" />
+			</slot>
 
 			<!-- long text with title -->
 			<p v-if="title">
