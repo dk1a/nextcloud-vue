@@ -20,27 +20,6 @@
  -
  -->
 
-<!--
-<template>
-	<Modal
-		v-if="modal"
-		size="full">
-		<div class="app-settings">
-			<nav v-if="!isMobile"
-				class="app-settings__navigation">
-				<template v-for="section in sections">
-					<h3 :key="section.name">
-						{{ section.name }}
-					</h3>
-				</template>
-			</nav>
-			<div class="app-settings__content">
-				<slot />
-			</div>
-		</div>
-	</Modal>
-</template>
--->
 <script>
 import Modal from '../Modal'
 import { emit, subscribe, unsubscribe } from '@nextcloud/event-bus'
@@ -60,6 +39,19 @@ export default {
 		return {
 			open: true,
 		}
+	},
+
+	computed: {
+
+		content() {
+			return document.querySelector()
+		},
+
+		showNavigation() {
+			if (isMobile) {
+				return false
+			} else return 0
+		},
 	},
 
 	mounted() {
@@ -85,31 +77,78 @@ export default {
 				emit('settings-toggled', {
 					open: this.open,
 				})
-			// We wait for 1.5 times the animation length to give the animation time to really finish.
+				// We wait for 1.5 times the animation length to give the animation time to really finish.
 			}, 1.5 * animationLength)
+		},
+
+		/**
+		 * Builds the settings navigation menu
+		 * @param {object} slots The default slots object passed from the render function.
+		 * @returns {array} the navigation items
+		 */
+		getSettingsNavigation(slots) {
+			// Array of navigationitems strings
+			const navigationItems = slots.filter(vNode => vNode.componentOptions).map(vNode => vNode.componentOptions.propsData.sectionTitle)
+			// Check for the uniqueness of section titles
+			navigationItems.forEach((element, index) => {
+				const newArray = [...navigationItems]
+				newArray.splice(index, 1)
+				if (newArray.indexOf(element) !== -1) {
+					throw new Error(`Duplicate section title found: ${element}. Settings navigation sections must have unique section titles.`)
+				}
+			})
+			return navigationItems
+		},
+
+		/**
+		 * Scrolls the content to the selected settings section.absolute
+		 * @param {string} item the name of the section
+		 */
+		handleSettingsNavigationClick(item) {
+
 		},
 	},
 
 	render(createElement) {
 
-		return createElement(Modal, {
+		const createListElemtent = (item) => createElement('li', { attrs: {
+			class: 'navigation-list__item',
+		} }, [ createElement('a', {
+			attrs: {
+				href: '#',
+				class: 'link',
+			},
+			on: {
+				click: this.handleSettingsNavigationClick(item),
+			} }, item)])
+
+		return createElement('Modal', {
 			attrs: {
 				open: true,
 			},
-		},
-		createElement('div', {
-			attrs: {
-				class: 'app-settings',
-			},
 		}, [
-			createElement('div', { attrs: {
-				class: 'app-settings__navigation',
-			} }, 'test1'),
-			createElement('div', { attrs: {
-				class: 'app-settings__content',
-			} }, 'test2'),
-		]),
-		)
+			createElement('div', {
+				attrs: {
+					class: 'app-settings',
+				},
+			}, [
+				createElement('div', {
+					attrs: {
+						class: 'app-settings__navigation',
+					},
+				}, [ createElement('ul', {
+					attrs: {
+						class: 'navigation-list',
+					},
+				}, this.getSettingsNavigation(this.$slots.default).map(item => {
+					console.debug('item: ' + item)
+					return createListElemtent(item)
+				}))]),
+				createElement('div', { attrs: {
+					class: 'app-settings__content',
+				} }, this.$slots.default),
+			]),
+		])
 	},
 
 	unmounted() {
@@ -117,8 +156,43 @@ export default {
 	},
 
 }
+
 </script>
 
 <style lang="scss" scoped>
+.app-settings {
+	padding:8px;
+	display: flex;
+	height: 600px;
+	width: 100%;
+	&__navigation {
+		width: 200px;
+		margin-right: 20px;
+	}
+	&__content {
+		width: 400px;
+	}
+}
 
+.navigation-list {
+	&__item {
+		height: 44px;
+		margin: 4px;
+		line-height: 44px;
+		border-radius: var(--border-radius-pill);
+		font-weight: bold;
+		padding: 0 20px;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		overflow: hidden;
+		cursor: pointer;
+		&:hover, &:focus {
+			background-color: var(--color-background-hover)
+		}
+		&:active {
+			background-color: var(--color-primary-active);
+			color: var(--color-primary-text);
+		}
+	}
+}
 </style>
